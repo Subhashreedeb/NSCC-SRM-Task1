@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup & Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 25px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .dashboard-container {
+            max-width: 800px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .error-msg {
+            color: #d9534f;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        button.btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button.btn-submit:hover {
+            background-color: #0056b3;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            word-break: break-all;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-delete:hover {
+            background-color: #bd2130;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: #777;
+            padding: 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Signup Form Section -->
+    <div class="container">
+        <h2>User Signup</h2>
+        <form id="signupForm" novalidate>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter username">
+                <div class="error-msg" id="usernameError">Username cannot be empty.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Enter email">
+                <div class="error-msg" id="emailError">Please enter a valid email address.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="At least 6 characters">
+                <div class="error-msg" id="passwordError">Password must be at least 6 characters long.</div>
+            </div>
+
+            <button type="submit" class="btn-submit">Signup</button>
+        </form>
+    </div>
+
+    <!-- Dashboard Table Section -->
+    <div class="container dashboard-container">
+        <h2>User Dashboard</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Hashed Password</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <!-- User rows will be added dynamically -->
+            </tbody>
+        </table>
+        <div id="emptyMessage" class="empty-msg">No registered users found.</div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const signupForm = document.getElementById('signupForm');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        const usernameError = document.getElementById('usernameError');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+
+        const userTableBody = document.getElementById('userTableBody');
+        const emptyMessage = document.getElementById('emptyMessage');
+
+        // Regex for email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // On initial page load, display saved users
+        document.addEventListener('DOMContentLoaded', displayUsers);
+
+        // Form Submit Listener
+        signupForm.addEventListener('submit', async function(e) {
+            e.preventDefault(); // Prevent page refresh
+
+            const username = usernameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            let isValid = true;
+
+            // 1. Username Validation
+            if (username === "") {
+                usernameError.style.display = "block";
+                isValid = false;
+            } else {
+                usernameError.style.display = "none";
+            }
+
+            // 2. Email Validation (Regex)
+            if (!emailRegex.test(email)) {
+                emailError.style.display = "block";
+                isValid = false;
+            } else {
+                emailError.style.display = "none";
+            }
+
+            // 3. Password Validation
+            if (password.length < 6) {
+                passwordError.style.display = "block";
+                isValid = false;
+            } else {
+                passwordError.style.display = "none";
+            }
+
+            // If all fields are valid
+            if (isValid) {
+                // Hash the password using Web Crypto API
+                const hashedPassword = await hashPassword(password);
+
+                // Create user object
+                const newUser = {
+                    id: Date.now(), // Unique ID for deletion
+                    username: username,
+                    email: email,
+                    password: hashedPassword
+                };
+
+                // Save to localStorage
+                saveUserToLocalStorage(newUser);
+
+                // Reset form
+                signupForm.reset();
+
+                // Refresh dashboard display
+                displayUsers();
+            }
+        });
+
+        // Function: Hash password using SHA-256
+        async function hashPassword(message) {
+            const msgUint8 = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        // Function: Save user to localStorage
+        function saveUserToLocalStorage(user) {
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            users.push(user);
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        // Function: Fetch and Display Users in Table
+        function displayUsers() {
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            userTableBody.innerHTML = '';
+
+            if (users.length === 0) {
+                emptyMessage.style.display = 'block';
+            } else {
+                emptyMessage.style.display = 'none';
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td title="${user.password}">${user.password.substring(0, 15)}...</td>
+                        <td><button class="btn-delete" onclick="deleteUser(${user.id})">Delete</button></td>
+                    `;
+                    userTableBody.appendChild(row);
+                });
+            }
+        }
+
+        // Function: Delete User (Brownie Subtask)
+        function deleteUser(id) {
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            users = users.filter(user => user.id !== id);
+            localStorage.setItem('users', JSON.stringify(users));
+            displayUsers();
+        }
+    </script>
+</body>
+</html>
